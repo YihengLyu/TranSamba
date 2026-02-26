@@ -104,11 +104,11 @@ def get_args_parser():
     parser.add_argument('--finetune', default='', help='finetune from checkpoint')
 
     # Dataset parameters
-    parser.add_argument('--data-path', default='/group/pmc012/ylyu/TranSamba+/data/task/imageVolume', type=str, help='dataset path')
+    parser.add_argument('--data-path', default='', type=str, help='dataset path')
     parser.add_argument('--data-set', default='Volume', type=str, help='dataset')
 
 
-    parser.add_argument('--output_dir', default='/group/pmc012/ylyu/TranSamba+/saved_model/task/date_model_name',
+    parser.add_argument('--output_dir', default='',
                         help='path where to save, empty for no saving')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -301,7 +301,7 @@ def main(args):
         return
 
     if args.gen_attention_maps:
-        resume = os.path.join('/group/pmc012/ylyu/TranSamba+/saved_model', args.task, args.resume, 'checkpoint.pth')
+        resume = os.path.join('', args.task, args.resume, 'checkpoint.pth')
         args.attention_dir = resume.replace(resume.split('/')[-1], args.attention_dir)
         args.cam_npy_dir = resume.replace(resume.split('/')[-1], args.cam_npy_dir)
         checkpoint = torch.load(resume, map_location='cpu')

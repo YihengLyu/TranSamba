@@ -156,27 +156,6 @@ class InPlaneMambaBlock(nn.Module):
         return x
 
 
-class MambaBlock2(nn.Module):
-    def __init__(self, dim, d_state=16, d_conv=4, expand=2,
-                 length=16):
-        super().__init__()
-        self.mamba = Mamba(d_model=dim, d_state=d_state, d_conv=d_conv, expand=expand)
-        self.L = length
-
-    def forward(self, x):
-        B, M, D = x.shape
-        
-        x = x.reshape(B // self.L, self.L, M, D)  # b, L, M, D
-        x = x.reshape(B // self.L, self.L * M, D)  # b, L*M, D
-
-        x = self.mamba(x)  # b, L*M, D
-
-        x = x.reshape(B // self.L, self.L, M, D)  # b, L, M, D
-        x = x.reshape(B, M, D)
-
-        return x
-
-
 class Block(nn.Module):
 
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
@@ -204,7 +183,6 @@ class Block(nn.Module):
         self.mamba_block = MambaBlock(dim, length=length) if hy_layer in ['P', 'CI', 'IC'] else None
 
         self.uni_inm = InPlaneMambaBlock(dim, direction='forward') if hy_layer == 'UniInM-InT' else None
-        self.mamba_block_2 = MambaBlock2(dim, length=length) if hy_layer == 'CI-2' else None
 
 
     def forward(self, x):
@@ -227,10 +205,6 @@ class Block(nn.Module):
             if self.hy_layer == 'UniInM-InT':
                 o = self.norm3(x)
                 x = x + self.drop_path(self.uni_inm(o))
-            
-            if self.hy_layer == 'CI-2':
-                o = self.norm3(x[:, 1:, :])
-                x = x + self.drop_path(torch.cat((x[:, :1, :], self.mamba_block_2(o)), 1))
 
             o, weights = self.attn(self.norm1(x))
             x = x + self.drop_path(o)
